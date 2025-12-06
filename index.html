@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Echo Spark</title>
+    <link rel="stylesheet" href="style.css" />
+
+    <!-- ================= CHAT POPUP CSS ================= -->
+    <style>
+      /* BUTTON FLOATING */
+      /* BUTTON FLOATING */
+      #chat-launcher {
+        position: fixed;
+        bottom: 22px;
+        right: 22px;
+        background: #0084ff;
+        color: white;
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        font-size: 28px;
+        box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
+        z-index: 9999;
+        transition: 0.2s ease;
+      }
+
+      #chat-launcher:hover {
+        transform: scale(1.08);
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.35);
+      }
+
+      /* POPUP */
+      #chat-popup {
+        position: fixed;
+        bottom: 95px;
+        right: 20px;
+        width: 360px;
+        height: 480px;
+        background: #ffffff;
+        border-radius: 18px;
+        display: none;
+        flex-direction: column;
+        overflow: hidden;
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+        z-index: 9999;
+        animation: fadeIn 0.25s ease;
+      }
+
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(10px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      /* HEADER */
+      #chat-header {
+        background: #0084ff;
+        color: white;
+        padding: 12px 16px;
+        font-size: 17px;
+        font-weight: bold;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      #chat-header #chat-close {
+        cursor: pointer;
+        font-size: 20px;
+        opacity: 0.85;
+        transition: 0.2s;
+      }
+
+      #chat-header #chat-close:hover {
+        opacity: 1;
+        transform: scale(1.15);
+      }
+
+      /* MESSAGES AREA */
+      #chat-messages {
+        flex: 1;
+        padding: 12px;
+        overflow-y: auto;
+        background: #f0f2f5;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+
+      /* CHAT ROW (flex) */
+      .chat-row {
+        display: flex;
+        align-items: flex-end;
+        gap: 8px;
+        max-width: 85%;
+      }
+
+      /* AI = bên trái */
+      .chat-row.ai {
+        flex-direction: row;
+        align-self: flex-start;
+      }
+
+      /* USER = bên phải */
+      .chat-row.user {
+        flex-direction: row-reverse;
+        align-self: flex-end;
+      }
+
+      /* AVATAR */
+      .avatar {
+        width: 34px;
+        height: 34px;
+        border-radius: 50%;
+        object-fit: cover;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+      }
+
+      /* BUBBLE */
+      .bubble {
+        padding: 10px 14px;
+        border-radius: 18px;
+        font-size: 14px;
+        line-height: 1.3;
+        max-width: 240px;
+      }
+
+      /* AI bubble */
+      .msg-ai {
+        background: #ffffff;
+        color: #111;
+        border-radius: 18px 18px 18px 4px;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+      }
+
+      /* User bubble */
+      .msg-user {
+        background: #0084ff;
+        color: white;
+        border-radius: 18px 18px 4px 18px;
+      }
+
+      /* INPUT AREA */
+      #chat-input-area {
+        padding: 10px;
+        background: #ffffff;
+        border-top: 1px solid #ddd;
+      }
+
+      #chat-input {
+        width: 100%;
+        padding: 10px 14px;
+        border-radius: 20px;
+        border: 1px solid #ccc;
+        outline: none;
+        transition: 0.2s;
+        font-size: 14px;
+      }
+
+      #chat-input:focus {
+        border-color: #0084ff;
+        box-shadow: 0 0 0 2px rgba(0, 132, 255, 0.2);
+      }
+
+      /* Typing animation */
+      .typing::after {
+        content: "";
+        display: inline-block;
+        width: 7px;
+        height: 7px;
+        margin-left: 6px;
+        border-radius: 50%;
+        background: gray;
+        animation: blink 1s infinite;
+      }
+
+      @keyframes blink {
+        0% {
+          opacity: 0.2;
+        }
+        50% {
+          opacity: 1;
+        }
+        100% {
+          opacity: 0.2;
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <!-- ================= WEBSITE CONTENT ================= -->
+
+    <!-- HEADER -->
+    <header class="navbar">
+      <div class="container nav-content">
+        <div class="logo">
+          <img src="./IMG/logo.png" alt="Echo Spark" />
+        </div>
+
+        <!-- KHỐI GỘP MENU + BUTTON -->
+        <div class="nav-right">
+          <nav>
+            <ul class="nav-links">
+              <li><a href="#">Trang chủ</a></li>
+              <li><a href="#">Dịch vụ</a></li>
+              <li><a href="#">Giới thiệu</a></li>
+              <li><a href="#">Liên hệ</a></li>
+            </ul>
+          </nav>
+
+          <div class="nav-btn">
+            <button class="btn-primary">Đăng nhập</button>
+            <button class="btn-primary">Đăng ký</button>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- HERO -->
+    <section class="hero">
+      <div class="container">
+        <h1>Khơi nguồn tiềm năng,<br />Vượt mọi giới hạn</h1>
+        <p>Hỗ trợ mọi trẻ em vươn tới cuộc sống tốt đẹp hơn.</p>
+        <button class="btn-primary">Đăng ký để tìm hiểu thêm</button>
+
+        <img src="./IMG/banner.jpg" class="hero-img" alt="Hero Image" />
+      </div>
+    </section>
+
+    <!-- SECTION 1 -->
+    <section class="section">
+      <div class="container">
+        <h2>Khóa học</h2>
+
+        <div class="grid-3">
+          <div class="card">
+            <img src="./IMG/img_1.jpg" alt="" />
+            <h3>Gói phụ huynh chuyên sâu</h3>
+            <p>
+              Dành cho gia đình có con tự kỉ, trẻ rối loạn phát triển, trẻ tăng
+              động giảm chú ý, hoặc gặp khó khăn tâm lý.
+            </p>
+          </div>
+
+          <div class="card">
+            <img src="./IMG/img_2.png" alt="" />
+            <h3>Gói dịch vụ đồng hành với chuyên gia</h3>
+            <p>
+              Hỗ trợ cá nhân hoá sâu - dành cho trẻ cần can thiệp chuyên môn &
+              phụ huynh cần hướng dẫn cụ thể.
+            </p>
+          </div>
+
+          <div class="card">
+            <img src="./IMG/img_3.jpg" alt="" />
+            <h3>Gói học liệu số và quản lý & công nghệ</h3>
+            <p>
+              Giải pháp trọn gói dành cho Trung tâm Giáo dục Đặc biệt & Trường
+              hòa nhập
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 2 -->
+    <section class="section">
+      <div class="container">
+        <h2>Trung tâm liên kết</h2>
+
+        <div class="grid-2">
+          <div>
+            <h3>Hệ thống Cơ sở Giáo dục Đặc biệt Phú Thuỷ</h3>
+            <p>
+              Cơ sở 1: Số nhà 21, Lô 24A, Khu đô thị Geleximco, Tây Mỗ, TP Hà
+              Nội.
+            </p>
+            <h3>Hệ thống Cơ sở Giáo dục Đặc biệt Phú Thuỷ</h3>
+            <p>
+              Cơ sở 2: Số nhà 65, đường Lê Thánh Tông, phường Tân Thịnh, TP Hòa
+              Bình
+            </p>
+            <h3>Hệ thống Cơ sở Giáo dục Đặc biệt Phú Thuỷ</h3>
+            <p>Khu An Khang, thị trấn Mãn Đức, huyện Tân Lạc, tỉnh Hòa Bình</p>
+            <button class="btn-secondary">Kết nối</button>
+          </div>
+
+          <div>
+            <img src="./IMG/img_4.jpg" class="round" alt="test" />
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 3 -->
+    <section class="section">
+      <div class="container">
+        <h2>Giới thiệu</h2>
+        <p>
+          Nền tảng giáo dục - trị liệu ứng dụng công nghệ tiên phong dành cho
+          trẻ có nhu cầu đặc biệt.
+        </p>
+        <p>
+          Echo Spark được xây dựng để đồng hành cùng trẻ tự kỉ, trẻ rối loạn
+          phát triển, trẻ tăng động giảm chú ý trong hành trình học tập và phát
+          triển.
+        </p>
+        <p>
+          Với công nghệ hỗ trợ tiên tiến bao gồm AI cá nhân hóa, Voice Command
+          và học liệu đa giác quan, Echo Spark xây dựng một môi trường học tập
+          nơi trẻ có thể học tập độc lập, phát triển an toàn và tự tin. Bên cạnh
+          đó, mang đến cho phụ huynh, giáo viên một công cụ hiệu quả để đồng
+          hành cùng con.
+        </p>
+        <p>
+          Đây không chỉ là một nền tảng EdTech mà là giải pháp xóa bỏ khoảng
+          cách giáo dục và khoảng cách số cho trẻ có nhu cầu đặc biệt, phù hợp
+          định hướng hòa nhập hiện nay của giáo dục Việt Nam.
+        </p>
+        <p>
+          Chúng tôi tin rằng:
+          <b>
+            “Mỗi đứa trẻ đều có âm sắc riêng. Echo Spark giúp thanh âm ấy được
+            lắng nghe và tỏa sáng.”
+          </b>
+        </p>
+      </div>
+    </section>
+
+    <!-- TESTIMONIAL -->
+    <section class="section">
+      <div class="container">
+        <h2>Phản hồi</h2>
+
+        <div class="testimonial-wrapper">
+          <div class="testimonial">
+            <p>
+              “Điều em thích nhất ở Echo Spark là con chịu ngồi học lâu hơn.
+              Trước đây chỉ được 3–5 phút là con bỏ chạy, nhưng giờ nhờ bài học
+              ngắn, nhiều hình ảnh, con kiên trì đến 10–12 phút. Không nhiều
+              nhưng với con em, đó là cả một bước tiến rồi. Em cũng hiểu con hơn
+              vì hệ thống có báo cáo mỗi tuần. Thật sự nhẹ lòng.”
+            </p>
+          </div>
+
+          <div class="testimonial">
+            <p>
+              “Tôi thích phần theo dõi tiến trình, nhìn rõ được con học gì, làm
+              tốt phần nào, còn khó khăn gì. Đi trị liệu ở trung tâm thì em ít
+              khi nắm được chi tiết thế này. Nhờ vậy em nói chuyện với giáo viên
+              cũng dễ dàng và chủ động hơn. "
+            </p>
+          </div>
+
+          <div class="testimonial">
+            <p>
+              “Con tôi 6 tuổi, nói ít, giao tiếp kém. Tôi học theo bài hướng dẫn
+              trong web rồi thực hành cùng con mỗi tối. Bất ngờ là con bắt đầu
+              chủ động chỉ đồ vật và gọi tên nhiều hơn, tương tác với mẹ nhiều
+              hơn. Tôi biết con còn cả hành trình dài, nhưng giờ tôi cũng cảm
+              thấy tự tin hơn”
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer class="footer">
+      <div class="container">
+        <h2>EchoSpark</h2>
+
+        <div class="footer-grid">
+          <div>
+            <h4>Về Chúng Tôi</h4>
+            <p>Giới thiệu công ty</p>
+            <p>Lịch sử phát triển</p>
+            <p>Tầm nhìn và sứ mệnh</p>
+            <p>Đội ngũ nhân sự</p>
+          </div>
+          <div>
+            <h4>Sản Phẩm & Dịch Vụ</h4>
+            <p>Khóa học cho tâm lý</p>
+            <p>Khóa học cho trẻ em khuyết tật</p>
+            <p>Tư vấn tâm lý</p>
+            <p>Đào tạo và phát triển</p>
+            <p>Hỗ trợ khách hàng</p>
+          </div>
+          <div>
+            <h4>Liên Kết Nhanh</h4>
+            <p>Blog và tin tức</p>
+            <p>Trung tâm trợ giúp</p>
+            <p>Chính sách bảo mật</p>
+            <p>Điều khoản sử dụng</p>
+          </div>
+          <div>
+            <h4>Liên Hệ</h4>
+            <p>📞 +84 28 1234 5678</p>
+            <p>📧 contact@echospark.vn</p>
+            <p>📍 TP. Hồ Chí Minh</p>
+            <p>🕐 Thứ 2 - Thứ 6: 8h - 18h</p>
+          </div>
+        </div>
+      </div>
+    </footer>
+
+    <!-- ================= CHATBOX POPUP ================= -->
+
+    <!-- Nút mở chat -->
+    <div id="chat-launcher">💬</div>
+
+    <!-- POPUP CHAT -->
+    <div id="chat-popup">
+      <div id="chat-header">
+        Chat AI
+        <span id="chat-close">✖</span>
+      </div>
+
+      <!-- KHUNG TIN NHẮN -->
+      <div id="chat-messages">
+        <!-- Tin nhắn mẫu AI -->
+        <div class="chat-row ai">
+          <!-- <img src="./IMG/ai.png" class="avatar" /> -->
+          <!-- <div class="bubble msg-ai">Xin chào! Tôi có thể giúp gì cho bạn?</div> -->
+        </div>
+
+        <!-- Tin nhắn mẫu User -->
+        <div class="chat-row user">
+          <!-- <div class="bubble msg-user">Tôi đang thử chat!</div> -->
+          <!-- <img src="./IMG/user.png" class="avatar" /> -->
+        </div>
+      </div>
+
+      <!-- KHUNG NHẬP -->
+      <div id="chat-input-area">
+        <input id="chat-input" placeholder="Nhập tin nhắn..." />
+      </div>
+    </div>
+
+    <!-- ================= CHATBOX SCRIPT ================= -->
+
+    <script type="module">
+      import OpenAI from "https://cdn.jsdelivr.net/npm/openai@4.70.2/+esm";
+      import { courseData } from "./course_data.js";
+
+      const openai = new OpenAI({
+        apiKey: "sk-8gYxx0b6etPUI6Wuymg8e9gYBEu2OdlIM676oKvSJSYxl6N5", // key free
+        baseURL: "https://gpt1.shupremium.com/v1",
+        dangerouslyAllowBrowser: true,
+      });
+
+      const launcher = document.getElementById("chat-launcher");
+      const popup = document.getElementById("chat-popup");
+      const closeBtn = document.getElementById("chat-close");
+      const messages = document.getElementById("chat-messages");
+      const input = document.getElementById("chat-input");
+
+      launcher.onclick = () => (popup.style.display = "flex");
+      closeBtn.onclick = () => (popup.style.display = "none");
+
+      input.addEventListener("keydown", async (e) => {
+        if (e.key === "Enter") {
+          const msg = input.value.trim();
+          if (!msg) return;
+
+          appendMsg("user", msg);
+          input.value = "";
+
+          const typing = showTyping();
+
+          try {
+            const completion = await openai.chat.completions.create({
+              model: "gpt-4o-mini",
+              messages: [
+                {
+                  role: "system",
+                  content: `
+Bạn là trợ lý chuyên gia tâm lý học.
+
+Dưới đây là toàn bộ dữ liệu khóa học:
+
+${JSON.stringify(courseData)}
+
+Khi trả lời, bạn PHẢI trình bày theo dạng bullet:
+
+- Ý 1...
+- Ý 2...
+- Ý 3...
+
+Những bullet này chỉ dùng để tách nội dung. Người dùng không cần thấy ký hiệu bullet.
+Nếu câu hỏi nằm vượt ngoài phạm vi chuyên ngành tâm lý thì trả lời: Câu hỏi này nằm ngoài phạm vi của tôi!
+`,
+                },
+                { role: "user", content: msg },
+              ],
+            });
+
+            removeTyping(typing);
+
+            const fullText = completion.choices[0].message.content;
+
+            // TÁCH & HIỂN THỊ NHIỀU TIN
+            sendMultiMessages(fullText);
+          } catch (err) {
+            removeTyping(typing);
+            appendMsg("ai", "Lỗi API: " + err.message);
+          }
+        }
+      });
+
+      // ============================================
+      // TÁCH BULLET & LOẠI BỎ BULLET KHI HIỂN THỊ
+      // ============================================
+      function sendMultiMessages(text) {
+        // Tách bullet: -, •, *, 1.
+        const parts = text
+          .split(/(?:^|\n)\s*(?:[-•*]|\d+\.)\s+/g)
+          .map((p) => p.trim())
+          .filter((p) => p.length > 0);
+
+        // Xóa bullet và ghép lại thành 1 bubble
+        const merged = parts
+          .map((p) => p.replace(/^([-•*]|\d+\.)\s*/, "").trim())
+          .join("<br>");
+
+        appendMsg("ai", merged);
+      }
+
+      // ====================
+      // HIỂN THỊ TIN
+      // ====================
+      function appendMsg(role, text) {
+        const messages = document.getElementById("chat-messages");
+
+        if (role === "user") {
+          messages.innerHTML += `
+        <div class="chat-row user">
+          <img src="./IMG/user.jpg" class="avatar"/>
+          <div class="bubble msg-user">${text}</div>        
+        </div>
+      `;
+        } else {
+          messages.innerHTML += `
+        <div class="chat-row ai">
+          <img src="./IMG/ai.png" class="avatar" />
+          <div class="bubble msg-ai">${text}</div>
+        </div>
+      `;
+        }
+
+        messages.scrollTop = messages.scrollHeight;
+      }
+
+      // ====================
+      // TYPING
+      // ====================
+      function showTyping() {
+        const div = document.createElement("div");
+        div.className = "chat-row ai";
+        div.innerHTML = `
+      <img src="./IMG/ai.png" class="avatar" />
+      <div class="bubble msg-ai typing">Đang trả lời...</div>
+    `;
+        messages.appendChild(div);
+        messages.scrollTop = messages.scrollHeight;
+        return div;
+      }
+
+      function removeTyping(div) {
+        if (div) div.remove();
+      }
+    </script>
+  </body>
+</html>
