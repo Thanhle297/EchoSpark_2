@@ -195,6 +195,24 @@
           opacity: 0.2;
         }
       }
+
+      .grid-4 {
+        display: grid;
+        gap: 20px;
+        grid-template-columns: repeat(4, 1fr);
+        margin-top: 20px;
+      }
+
+      .grid-4 .card {
+        text-align: center;
+      }
+
+      .grid-4 img {
+        width: 100%;
+        height: 230px;
+        object-fit: cover;
+        border-radius: 12px;
+      }
     </style>
   </head>
 
@@ -264,7 +282,7 @@
 
           <div class="card">
             <img src="./IMG/img_3.jpg" alt="" />
-            <h3>GGói học liệu số, quản lý & công nghệ</h3>
+            <h3>Gói học liệu số, quản lý & công nghệ</h3>
             <p>
               Giải pháp trọn gói dành cho Trung tâm Giáo dục Đặc biệt & Trường
               hòa nhập
@@ -298,6 +316,47 @@
 
           <div>
             <img src="./IMG/img_4.jpg" class="round" alt="test" />
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION: KẾT NỐI CHUYÊN GIA -->
+    <section class="section">
+      <div class="container">
+        <h2>Kết nối chuyên gia</h2>
+
+        <div class="grid-4">
+          <div class="card">
+            <img
+              src="./IMG/CG1.png"
+              alt="TS. Bùi Thị Thu Huyền"
+              class="round"
+            />
+            <h3>TS. Bùi Thị Thu Huyền</h3>
+          </div>
+
+          <div class="card">
+            <img src="./IMG/CG2.jpeg" alt="TS. Đỗ Thị Thảo" class="round" />
+            <h3>TS. Đỗ Thị Thảo</h3>
+          </div>
+
+          <div class="card">
+            <img
+              src="./IMG/CG3.png"
+              alt="PGS.TS. Trần Thị Lệ Thu"
+              class="round"
+            />
+            <h3>PGS.TS. Trần Thị Lệ Thu</h3>
+          </div>
+
+          <div class="card">
+            <img
+              src="./IMG/CG4.jpg"
+              alt="TS. Đinh Nguyễn Trang Thu"
+              class="round"
+            />
+            <h3>TS. Đinh Nguyễn Trang Thu</h3>
           </div>
         </div>
       </div>
