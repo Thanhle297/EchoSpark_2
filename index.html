@@ -213,6 +213,19 @@
         object-fit: cover;
         border-radius: 12px;
       }
+      html {
+        scroll-behavior: smooth;
+      }
+      .section {
+        opacity: 0;
+        transform: translateY(40px);
+        transition: opacity 0.6s ease, transform 0.6s ease;
+      }
+
+      .section.show {
+        opacity: 1;
+        transform: translateY(0);
+      }
     </style>
   </head>
 
@@ -223,7 +236,7 @@
     <header class="navbar">
       <div class="container nav-content">
         <div class="logo">
-          <img src="./IMG/logo.png" alt="Echo Spark" />
+          <a href="#"><img src="./IMG/logo.png" alt="Echo Spark" /></a>
         </div>
 
         <!-- KHỐI GỘP MENU + BUTTON -->
@@ -231,9 +244,9 @@
           <nav>
             <ul class="nav-links">
               <li><a href="#">Trang chủ</a></li>
-              <li><a href="#">Dịch vụ</a></li>
-              <li><a href="#">Giới thiệu</a></li>
-              <li><a href="#">Liên hệ</a></li>
+              <li><a href="#section1">Dịch vụ</a></li>
+              <li><a href="#section4">Giới thiệu</a></li>
+              <li><a href="#footer1">Liên hệ</a></li>
             </ul>
           </nav>
 
@@ -257,7 +270,7 @@
     </section>
 
     <!-- SECTION 1 -->
-    <section class="section">
+    <section class="section" id="section1">
       <div class="container">
         <h2>Sản phẩm dịch vụ</h2>
 
@@ -293,7 +306,7 @@
     </section>
 
     <!-- SECTION 2 -->
-    <section class="section">
+    <section class="section" id="section2">
       <div class="container">
         <h2>Trung tâm liên kết</h2>
 
@@ -322,7 +335,7 @@
     </section>
 
     <!-- SECTION: KẾT NỐI CHUYÊN GIA -->
-    <section class="section">
+    <section class="section" id="section3">
       <div class="container">
         <h2>Kết nối chuyên gia</h2>
 
@@ -363,7 +376,7 @@
     </section>
 
     <!-- SECTION 3 -->
-    <section class="section">
+    <section class="section" id="section4">
       <div class="container">
         <h2>Giới thiệu</h2>
         <p>
@@ -436,7 +449,7 @@
     </section>
 
     <!-- FOOTER -->
-    <footer class="footer">
+    <footer class="footer" id="footer1">
       <div class="container">
         <h2>EchoSpark</h2>
 
@@ -639,6 +652,32 @@ Những bullet này chỉ dùng để tách nội dung. Người dùng không c�
       function removeTyping(div) {
         if (div) div.remove();
       }
+    </script>
+    <script>
+      const sections = document.querySelectorAll(".section");
+
+      const observer = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+              entry.target.classList.add("show");
+            }
+          });
+        },
+        { threshold: 0.15 }
+      );
+
+      sections.forEach((sec) => observer.observe(sec));
+    </script>
+
+    <script>
+      function adjustPadding() {
+        const header = document.querySelector(".navbar");
+        document.body.style.paddingTop = header.offsetHeight + "px";
+      }
+
+      window.addEventListener("load", adjustPadding);
+      window.addEventListener("resize", adjustPadding);
     </script>
   </body>
 </html>
