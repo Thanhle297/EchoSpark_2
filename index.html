@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Echo Spark</title>
     <link rel="stylesheet" href="style.css" />
-    <link rel="icon" href="./IMG/logo.png">
+    <link rel="icon" href="./IMG/logo.png" />
 
     <!-- ================= CHAT POPUP CSS ================= -->
     <style>
@@ -156,6 +156,7 @@
         padding: 10px;
         background: #ffffff;
         border-top: 1px solid #ddd;
+        display: flex;
       }
 
       #chat-input {
@@ -260,7 +261,7 @@
     </header>
 
     <!-- HERO -->
-    <section class="hero">
+    <section class="hero" id="hero1">
       <div class="container">
         <h1>Khơi nguồn tiềm năng,<br />Vượt mọi giới hạn</h1>
         <p>Hỗ trợ trẻ em vươn tới cuộc sống tốt đẹp hơn.</p>
@@ -518,6 +519,22 @@
       <!-- KHUNG NHẬP -->
       <div id="chat-input-area">
         <input id="chat-input" placeholder="Nhập tin nhắn..." />
+        <!-- NÚT MICRO -->
+        <button
+          id="mic-btn"
+          style="
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: none;
+            background: #0084ff;
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+          "
+        >
+          🎤
+        </button>
       </div>
     </div>
 
@@ -618,33 +635,59 @@ Những bullet này chỉ dùng để tách nội dung. Người dùng không c�
 
         if (role === "user") {
           messages.innerHTML += `
-        <div class="chat-row user">
-          <img src="./IMG/user.jpg" class="avatar"/>
-          <div class="bubble msg-user">${text}</div>        
-        </div>
-      `;
+      <div class="chat-row user">
+        <img src="./IMG/user.jpg" class="avatar"/>
+        <div class="bubble msg-user">${text}</div>        
+      </div>
+    `;
         } else {
+          lastAIMessage = text; // ghi nhớ tin cuối của AI
+
           messages.innerHTML += `
-        <div class="chat-row ai">
-          <img src="./IMG/ai.png" class="avatar" />
-          <div class="bubble msg-ai">${text}</div>
+      <div class="chat-row ai">
+        <img src="./IMG/ai.png" class="avatar" />
+        <div class="bubble msg-ai">
+          ${text}
+          <button class="tts-btn" style="
+            margin-top:6px;
+            background:#0084ff;
+            color:#fff;
+            border:none;
+            padding:4px 10px;
+            border-radius:12px;
+            cursor:pointer;
+            font-size:12px;
+          ">🔊 Nghe</button>
         </div>
-      `;
+      </div>
+    `;
+
+          // Nếu người dùng nhập bằng voice → tự động đọc
+          if (lastInputByVoice) {
+            textToSpeech(text);
+            lastInputByVoice = false;
+          }
         }
 
         messages.scrollTop = messages.scrollHeight;
+
+        // Gắn sự kiện nghe cho nút 🔊
+        const btns = document.querySelectorAll(".tts-btn");
+        btns.forEach((btn) => {
+          btn.onclick = () => textToSpeech(text);
+        });
       }
 
       // ====================
-      // TYPING
+      // TYPING LOADING
       // ====================
       function showTyping() {
         const div = document.createElement("div");
         div.className = "chat-row ai";
         div.innerHTML = `
-      <img src="./IMG/ai.png" class="avatar" />
-      <div class="bubble msg-ai typing">Đang trả lời...</div>
-    `;
+    <img src="./IMG/ai.png" class="avatar" />
+    <div class="bubble msg-ai typing">Đang trả lời...</div>
+  `;
         messages.appendChild(div);
         messages.scrollTop = messages.scrollHeight;
         return div;
@@ -679,6 +722,219 @@ Những bullet này chỉ dùng để tách nội dung. Người dùng không c�
 
       window.addEventListener("load", adjustPadding);
       window.addEventListener("resize", adjustPadding);
+    </script>
+    <script>
+      // =========================================
+      //      HỆ THỐNG NHẬN GIỌNG NÓI DUY NHẤT
+      // =========================================
+
+      const SpeechAPI =
+        window.SpeechRecognition || window.webkitSpeechRecognition;
+      let recognizer = null;
+      let mode = ""; // "chat" hoặc "command"
+
+      if (SpeechAPI) {
+        recognizer = new SpeechAPI();
+        recognizer.lang = "vi-VN";
+        recognizer.continuous = false;
+        recognizer.interimResults = false;
+
+        recognizer.onresult = (e) => {
+          const text = e.results[0][0].transcript.toLowerCase().trim();
+          console.log("VOICE RESULT:", text);
+
+          if (mode === "chat") handleVoiceChat(text);
+          if (mode === "command") handleVoiceCommand(text);
+        };
+
+        recognizer.onerror = (err) => console.log("VOICE ERROR:", err);
+        recognizer.onend = () => {
+          document.getElementById("mic-btn").style.background = "#0084ff";
+        };
+      } else {
+        console.log("Trình duyệt không hỗ trợ SpeechRecognition.");
+      }
+
+      // =========================================
+      //       GIỌNG NÓI → NHẮN TIN CHO AI
+      // =========================================
+      function handleVoiceChat(text) {
+        lastInputByVoice = true; // báo hệ thống kích hoạt auto TTS
+
+        const input = document.getElementById("chat-input");
+        input.value = text;
+
+        const enter = new KeyboardEvent("keydown", { key: "Enter" });
+        input.dispatchEvent(enter);
+      }
+
+      // =========================================
+      //       GIỌNG NÓI → ĐIỀU KHIỂN WEBSITE
+      // =========================================
+      function handleVoiceCommand(text) {
+        if (text.includes("xuống"))
+          window.scrollBy({ top: 600, behavior: "smooth" });
+        if (text.includes("lên"))
+          window.scrollBy({ top: -600, behavior: "smooth" });
+
+        if (
+          text.includes("trang chủ") ||
+          text.includes("về trang chủ") ||
+          text.includes("đầu trang") ||
+          text.includes("home")
+        ) {
+          window.scrollTo({ top: 0, behavior: "smooth" });
+        }
+
+        if (text.includes("dịch vụ"))
+          document
+            .querySelector("#section1")
+            .scrollIntoView({ behavior: "smooth" });
+
+        if (text.includes("liên kết"))
+          document
+            .querySelector("#section2")
+            .scrollIntoView({ behavior: "smooth" });
+
+        if (text.includes("chuyên gia"))
+          document
+            .querySelector("#section3")
+            .scrollIntoView({ behavior: "smooth" });
+
+        if (text.includes("giới thiệu"))
+          document
+            .querySelector("#section4")
+            .scrollIntoView({ behavior: "smooth" });
+
+        if (text.includes("liên hệ"))
+          document
+            .querySelector("#footer1")
+            .scrollIntoView({ behavior: "smooth" });
+
+        const popup = document.getElementById("chat-popup");
+        if (text.includes("mở chat")) popup.style.display = "flex";
+        if (text.includes("đóng chat") || text.includes("tắt chat"))
+          popup.style.display = "none";
+      }
+
+      // =========================================
+      //           MICRO: CHAT AI
+      // =========================================
+      document.getElementById("mic-btn").addEventListener("click", () => {
+        if (!recognizer) {
+          alert("Trình duyệt không hỗ trợ giọng nói.");
+          return;
+        }
+
+        mode = "chat";
+        document.getElementById("mic-btn").style.background = "#f54242"; // đỏ khi đang nghe
+        recognizer.start();
+      });
+
+      // =========================================
+      //       PHÍM TẮT: Ctrl + Shift + V
+      // =========================================
+      document.addEventListener("keydown", (e) => {
+        if (e.ctrlKey && e.shiftKey && e.key.toLowerCase() === "v") {
+          if (!recognizer) return;
+
+          mode = "command";
+          console.log("Voice Command Activated");
+          recognizer.start();
+        }
+      });
+    </script>
+    <script>
+      // =========================================
+      //     PHÍM TẮT KÍCH HOẠT NÚT MICRO
+      // =========================================
+      // Alt + M
+      document.addEventListener("keydown", (e) => {
+        if (e.altKey && e.key.toLowerCase() === "m") {
+          const mic = document.getElementById("mic-btn");
+          if (mic) {
+            mic.click(); // Giống như người dùng bấm nút 🎤
+            console.log("Hotkey Alt + M → Mic activated");
+          }
+        }
+      });
+    </script>
+    <script>
+      // ======================================
+      //  LOAD GIỌNG TIẾNG VIỆT TỪ TRÌNH DUYỆT
+      // ======================================
+      let vietnamVoice = null;
+
+      // Hàm load voice tiếng Việt
+      function loadVietnamVoice() {
+        const voices = window.speechSynthesis.getVoices();
+
+        // tìm đúng giọng tiếng Việt
+        vietnamVoice = voices.find(
+          (v) =>
+            v.lang.toLowerCase().includes("vi") ||
+            v.name.toLowerCase().includes("viet")
+        );
+
+        console.log("Đã chọn giọng:", vietnamVoice);
+      }
+
+      // Chrome: voices được load bất đồng bộ → phải lắng nghe sự kiện này
+      window.speechSynthesis.onvoiceschanged = loadVietnamVoice;
+
+      // Gọi lần đầu
+      loadVietnamVoice();
+      // =========================
+      //   TEXT TO SPEECH ENGINE
+      // =========================
+      let lastAIMessage = "";
+      let lastInputByVoice = false;
+
+      function textToSpeech(text) {
+        if (!window.speechSynthesis) {
+          alert("Trình duyệt không hỗ trợ Text-to-Speech");
+          return;
+        }
+
+        const utter = new SpeechSynthesisUtterance(text);
+        utter.lang = "zh-CN"; // buộc tiếng Việt
+
+        if (vietnamVoice) {
+          utter.voice = vietnamVoice; // bắt buộc dùng đúng voice tiếng Việt
+        }
+
+        utter.rate = 1.0;
+        utter.pitch = 1.0;
+
+        window.speechSynthesis.cancel();
+        window.speechSynthesis.speak(utter);
+      }
+    </script>
+    <script>
+      // =========================================
+      //  HOTKEY: Alt + L để đọc lại tin AI mới nhất
+      // =========================================
+      document.addEventListener("keydown", (e) => {
+        if (e.altKey && e.key.toLowerCase() === "l") {
+          if (!lastAIMessage) {
+            alert("Chưa có tin nhắn AI nào.");
+            return;
+          }
+          console.log("Hotkey Alt + L → Read last AI message");
+          textToSpeech(lastAIMessage);
+        }
+      });
+    </script>
+    <script>
+      // =========================================
+      //  HOTKEY: Alt + K để DỪNG đọc
+      // =========================================
+      document.addEventListener("keydown", (e) => {
+        if (e.altKey && e.key.toLowerCase() === "k") {
+          console.log("Hotkey Alt + K → STOP TTS");
+          window.speechSynthesis.cancel(); // dừng đọc ngay
+        }
+      });
     </script>
   </body>
 </html>

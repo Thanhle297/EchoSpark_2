@@ -53,7 +53,7 @@ img {
   top: 0;
   left: 0;
   z-index: 9999;
-  padding: 10px 0;  /* thêm dòng này */
+  /* padding: 10px 0;  thêm dòng này */
   transition: 0.3s ease;
 }
 
